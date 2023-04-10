@@ -1,7 +1,9 @@
 import numpy as np
 import math
 
+# Indyk's Algorithm
 class LpNormSketch:
+    # run initialization to estimate the median of the sketch
     def __init__(self, p, n, eps):
         self.p = p
         self.n = n

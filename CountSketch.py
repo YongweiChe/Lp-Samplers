@@ -3,12 +3,12 @@ from hash import HashFamily
 
 # CountSketch according to JST11
 class CountSketch:
-    def __init__(self, l, w):
+    def __init__(self, l, w, k):
         self.l = l  # number of hash functions
         self.w = w  # width of the CountSketch
         self.S = np.zeros((l, w))  # linear sketch
-        self.h = HashFamily(2, m=w, num_funcs=l)
-        self.r = HashFamily(2, m=2, num_funcs=l) # returns 0 or 1, remember to transform
+        self.h = HashFamily(k, m=w, num_funcs=l)
+        self.r = HashFamily(k, m=2, num_funcs=l) # returns 0 or 1, remember to transform
 
     def update(self, i, delta):  # S[h(i)] <- S[h(i)] + delta * r(i)
         for j in range(self.l):
@@ -35,7 +35,7 @@ def computeLpNorm(vec, p):
 def main():
     U = 100
     M = 3
-    cm = CountSketch(21, 25)
+    cm = CountSketch(21, 25, 3)
 
     actual_counts = np.zeros(U)
     for i in range(1000):

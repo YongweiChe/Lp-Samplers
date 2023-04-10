@@ -59,7 +59,7 @@ class ApproximateLpSampler:
         #   h_j: [n] -> [6m]
         #   j \in [l]: l = O(log(n))
 
-        self.zCountSketch = CountSketch(6 * m, l)
+        self.zCountSketch = CountSketch(6 * m, l, k)
         
         ### UNCLEAR WHAT THE SPACE CONSTRAINTS OF THESE SHOULD BE ###
         
@@ -69,7 +69,7 @@ class ApproximateLpSampler:
         self.xLpSketch = LpNormSketch(p, n, eps)
         
         # 3. Maintain a linear sketch L'(z) as needed for the  L2 norm estimation of x
-        self.xL2Sketch = CountSketch(6 * m, l) # use the getL2Norm method
+        self.xL2Sketch = CountSketch(6 * m, l, k) # use the getL2Norm method
         
     # Processing Stage
     def insert(self, i, delta):
@@ -87,18 +87,28 @@ class ApproximateLpSampler:
     def sample(self):
         print("sampling...")
         
-        # 1. Compute the output z* of the CountSketch and its best m-sparse approximation \hat{z}
+        # 1. Compute the output z* of the CountSketch and its best m-sparse approximation z_hat
             # TODO: The entire output!!!???!?!?!?!?!??!
         
         # 2. Based on L(x) (xLpSketch) compute a real r with \|x\|_p \leq r \leq 2\|x\|_p
+        r = self.xLpSketch.getNorm()
         
         # 3. Based on L'(z - z_hat) = L'(z) - L'(z_hat))
         
+        # TODO: Write code to combine two L2 Sketches
+        # TODO: initialize and fill CountSketch with m-sparse vector z_hat
+        
         # 4. Find i with |z_i^*| maximal
+        
+        # TODO: Find maximal |z_i^*| by iterating through CountSketch??
         
         # 5. If s > \beta m^{1/2} * r or |z_i^*| < \eps^{-1\p} * r output FAIL
         
+        # TODO: Basic conditional hypothesis testing
+        
         # 6. Output i as the sample and z_i^* t_i^(1/p) as an approximation for x_i
+        
+        # TODO: return stuff
         
         
 
