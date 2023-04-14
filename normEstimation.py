@@ -25,13 +25,12 @@ class pstableMatrix:
         self.A = [ [None, None] for _ in range(r) ]
         
         for i in range(r):
-            self.A[i][0] = UniformRV(k, low=-math.pi/2, high=math.pi/2) # u
-            self.A[i][1] = UniformRV(k, low=0, high=1) # r
+            self.A[i][0] = UniformRV(k, num_vars=n, low=-math.pi/2, high=math.pi/2) # u
+            self.A[i][1] = UniformRV(k, num_vars=n, low=0, high=1) # r
         
     def shape(self):
         return (self.r, self.n)
 
-    # 
     def get(self, i, j):
         u = self.A[i][0].sample(j)
         r = self.A[i][1].sample(j)
@@ -75,8 +74,8 @@ class LpNormSketch:
     
     # return median of y divided by median(Dist)
     def getNorm(self):
-        print(self.y)
-        print(f'({np.median(self.y)} / {self.distMedian})')
+        # print(self.y)
+        # print(f'({np.median(self.y)} / {self.distMedian})')
         return np.median(self.y) / self.distMedian
 
 

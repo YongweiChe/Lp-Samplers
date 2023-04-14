@@ -40,7 +40,7 @@ class ApproximateLpSampler:
         # Generating uniform scaling factors: 
         #   https://sites.math.rutgers.edu/~sk1233/courses/topics-S18/lec5.pdf
         
-        self.t = UniformRV(k) # b_0 + b_1 * x + ... + b_d x^d are d+1-wise independent
+        self.t = UniformRV(k, n) # b_0 + b_1 * x + ... + b_d x^d are d+1-wise independent
         
         # use getUniformScalingFactor(b_kwise, i) to get the scaling factor t_i
         
@@ -64,7 +64,11 @@ class ApproximateLpSampler:
         self.xLpSketch = LpNormSketch(p, n, eps=1/3) # No need for the bounds on these to be as tight as they are
         
         # 3. Maintain a linear sketch L'(z) as needed for the  L2 norm estimation of x
-        self.xL2Sketch = CountSketch(6 * m, l, k) # use the getL2Norm method
+        # m = O(1/eps^2) and we need eps = 1/3 for the probability bound
+        # l = 1 - delta
+        
+        C_l2 = 10
+        self.xL2Sketch = CountSketch(9 * C_l2, 10 * C_l2, k) # use the getL2Norm method
         
     # Processing Stage
     def insert(self, i, delta):
@@ -80,8 +84,6 @@ class ApproximateLpSampler:
         
     # Recovery Stage
     def sample(self):
-        print("sampling...")
-        
         # 1. Compute the output z* of the CountSketch and its best m-sparse approximation z_hat
         m_heap = []
         heapq.heapify(m_heap) # pop removes smallest item from heap
@@ -114,27 +116,57 @@ class ApproximateLpSampler:
         max_index = 0
         max_val = m_heap[0][0]
         for val, index in m_heap:
-            print(f'val: {val}, max_val: {max_val}')
             if val > max_val:
                 max_val = val
                 max_index = index
         
         # 5. If s > \beta m^{1/2} * r or |z_i^*| < \eps^{-1\p} * r output FAIL
+        # TODO: re-instate hypothesis testing
         if (s > self.beta * self.m**0.5 * r ) or (abs(max_val) < self.eps**(1/self.p) * r):
             return None # Failure condition
         
         # 6. Output i as the sample and z_i^* t_i^(1/p) as an approximation for x_i
         return max_index, max_val * self.t.sample(i)**(1/self.p)
-        
-        
 
 
 def main():
     print("Initializing Approximate Lp Sampler...")
+    num_trials = 500
+    num_failures = 0
     
-    sampler = ApproximateLpSampler(1.5, 100, 0.1)
-    sampler.insert(1, 100)
-    print(sampler.sample())
+    frequencies = np.array([100, 200, 500, 300, 750])
+    
+    sample_counts = np.zeros(frequencies.shape)
+    sample_estimates = np.zeros(frequencies.shape)
+    
+    # p, n, eps
+    p = 1.5
+    n = 100
+    eps = 0.1
+    
+    for i in range(num_trials):
+        if i % 10 == 0:
+            print(f'trial: {i}')
+        sampler = ApproximateLpSampler(p=p, n=n, eps=eps)
+        for idx, freq in enumerate(frequencies):
+            sampler.insert(idx, freq)
+        
+        result = sampler.sample()
+        
+        if result is None:
+            num_failures += 1
+        else:
+            sampled_id, sampled_estimate = result
+            sample_counts[sampled_id] += 1
+            sample_estimates[sampled_id] += sampled_estimate
+            
+    sample_estimates = sample_estimates / sample_counts
+    
+    
+    print(f'success rate: {1 - num_failures / num_trials}')
+    print(f'true lp probabilities: {frequencies**p / np.sum(frequencies**p)}')
+    print(f'sampled probabilities: {sample_counts / np.sum(sample_counts)}')
+    print(f'sample estimates: {sample_estimates}')
     
 
 
