@@ -18,7 +18,8 @@ class CountSketch:
     def query(self, i): 
         vals = []
         for j in range(self.l):
-            vals.append((self.r.hash(j, i) * 2 - 1) * self.S[j, self.h.hash(j, i)])
+            print(self.h.hash(j, i))
+            vals.append((self.r.hash(j, i) * 2 - 1) * self.S[j, int(self.h.hash(j, i))])
         
         vals.sort()
         

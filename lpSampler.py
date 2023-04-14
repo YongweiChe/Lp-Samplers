@@ -32,7 +32,7 @@ class ApproximateLpSampler:
         
         # Set beta = eps^(1 - 1/p) and l = O(log(n))
         
-        beta = eps**(1 - 1/p)
+        self.beta = eps**(1 - 1/p)
         l = math.ceil(C3 * math.log(n))
         
         # Select k-wise independent uniform scaling factors t_i \in [0, 1] for i \in [n]
@@ -112,14 +112,15 @@ class ApproximateLpSampler:
         
         # 4. Find i with |z_i^*| maximal
         max_index = 0
-        max_val = m_heap[0]
+        max_val = m_heap[0][0]
         for val, index in m_heap:
+            print(f'val: {val}, max_val: {max_val}')
             if val > max_val:
                 max_val = val
                 max_index = index
         
         # 5. If s > \beta m^{1/2} * r or |z_i^*| < \eps^{-1\p} * r output FAIL
-        if (s > beta * self.m**0.5 * r ) or (abs(max_val) < self.eps**(1/self.p) * r):
+        if (s > self.beta * self.m**0.5 * r ) or (abs(max_val) < self.eps**(1/self.p) * r):
             return None # Failure condition
         
         # 6. Output i as the sample and z_i^* t_i^(1/p) as an approximation for x_i
@@ -132,6 +133,8 @@ def main():
     print("Initializing Approximate Lp Sampler...")
     
     sampler = ApproximateLpSampler(1.5, 100, 0.1)
+    sampler.insert(1, 100)
+    print(sampler.sample())
     
 
 
