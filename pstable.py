@@ -10,6 +10,16 @@ def pstable(p):
     X = math.sin(p * u) / (math.cos(u))**(1 / p) * \
         (math.cos(u * (1 - p)) / (-math.log(r)))**((1 - p) * p)
 
+def pstableMedian(p):
+    num_samples = 5000000
+    u = np.random.uniform(low=-math.pi/2, high=math.pi/2, size=(num_samples))
+    r = np.random.uniform(low=0, high=1, size=(num_samples))
+
+    X = np.sin(p * u) / (np.cos(u))**(1 / p) * \
+        (np.cos(u * (1 - p)) / (-np.log(r)))**((1 - p) * p)
+
+    return np.median(np.abs(X))
+
 # code to generate medians for p-stable distributions
 def main():
     num_estimates = 201
@@ -19,14 +29,8 @@ def main():
     medians = {}
 
     for p in p_arr:
-        num_samples = 5000000
-        u = np.random.uniform(low=-math.pi/2, high=math.pi/2, size=(num_samples))
-        r = np.random.uniform(low=0, high=1, size=(num_samples))
-
-        X = np.sin(p * u) / (np.cos(u))**(1 / p) * \
-            (np.cos(u * (1 - p)) / (-np.log(r)))**((1 - p) * p)
-
-        medians[p] = np.median(np.abs(X))
+        med = pstableMedian(p)
+        medians[p] = med
 
     print(medians)
     medians_file = open('medians.pkl', 'wb')
