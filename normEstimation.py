@@ -45,8 +45,7 @@ class pstableMatrix:
 class LpNormSketch:
     # run initialization to estimate the median of the sketch
     def __init__(self, p, n, eps):
-        C1 = 10
-        C2 = 10
+        C1, C2 = [2, 2]
         
         self.p = p
         self.n = n
@@ -55,13 +54,19 @@ class LpNormSketch:
         k = int(C1 * eps**(-p) * math.log(1 / eps)**(3 * p))
         r = int(C2 * 1/(eps**2))
         
+        self.k = k
+        self.r = r
+        
         # A in R^{r x n}
         self.A = pstableMatrix(p=p, r=r, n=n, k=k)
         
         self.y = np.zeros((r))
         
         # TODO: Preprocessing: Compute the estimated median of the p-stable dist
-        self.distMedian = pstableMedian(p, num_samples=5000000)
+        self.distMedian = pstableMedian(p, num_samples=50000)
+
+    def getSize(self):
+        return (self.r, self.k)
 
     # multiply new entry by every element in A, y = Ax
     # time complexity O(rk) because A.get requires UniformRV.sample which takes k time

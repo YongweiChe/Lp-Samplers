@@ -17,8 +17,8 @@ class HashFamily:
     
     def hash(self, i, x): # x is the number in [n] to be hashed i is the hash h_i function
         a_i = self.hashes[i]
-        x = np.array([x**i for i in range(len(a_i))])
-        res = np.dot(a_i, x) % self.large_prime % self.m
+        arr = np.array([x**i for i in range(len(a_i))])
+        res = np.dot(a_i, arr) % self.large_prime % self.m
         
         return res
         

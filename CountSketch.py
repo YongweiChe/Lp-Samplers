@@ -10,9 +10,16 @@ class CountSketch:
         self.h = HashFamily(k, m=w, num_funcs=l)
         self.r = HashFamily(k, m=2, num_funcs=l) # returns 0 or 1, remember to transform
 
+    def __str__(self):
+        return str(self.S)
+    
+    def getSize(self):
+        return (self.l, self.w)
+    
     def update(self, i, delta):  # S[h(i)] <- S[h(i)] + delta * r(i)
         for j in range(self.l):
-            self.S[j, self.h.hash(j, i)] += (self.r.hash(j, i) * 2 - 1) * delta
+            # need int() cast because sometimes python makes 0 a float 0.0
+            self.S[j, int(self.h.hash(j, i))] += (self.r.hash(j, i) * 2 - 1) * delta
     
     # point query of value at index i
     def query(self, i): 

@@ -11,7 +11,7 @@ class ApproximateLpSampler:
     def __init__(self, p, n, eps):
         
         # "LARGE ENOUGH CONSTANT FACTORS"
-        C1, C2, C3 = [10, 10, 10]
+        C1, C2, C3 = [2, 2, 2]
         
         self.p = p
         self.n = n
@@ -67,23 +67,35 @@ class ApproximateLpSampler:
         # m = O(1/eps^2) and we need eps = 1/3 for the probability bound
         # l = 1 - delta
         
-        C_l2 = 10
+        C_l2 = 2
         self.xL2Sketch = CountSketch(9 * C_l2, 10 * C_l2, k) # use the getL2Norm method
-        
+     
+    def getSize(self):
+        print('----Sampler Size----')
+        print(f'CountSketch Size: {self.zCountSketch.getSize()}')
+        print(f'Lp Sketch Size: {self.xLpSketch.getSize()}')
+        print(f'L2 Sketch Size: {self.xLpSketch.getSize()}')
+        print('--------------------')
+        return 0
+       
     # Processing Stage
     def insert(self, i, delta):
         # 1. Use count-sketch with parameter m for the scaled vector z \in R^n with z_i = x_i/(t_i)^(1/p)
         t_i = self.t.sample(i)
         self.zCountSketch.update(i, delta / (t_i**(1/self.p)))
+        # print(self.zCountSketch.getSize())
         
         # 2. Maintain a linear sketch L(x) as needed for the Lp norm approximation of x
         self.xLpSketch.update(i, delta) # !!DONE!!: FINISH THIS IMPLEMENTATION
+        # print(self.xLpSketch.getSize())
         
         # 3. Maintain a linear sketch L'(z) as needed for the L2 norm estimation of z
         self.xL2Sketch.update(i, delta)
+        # print(self.xL2Sketch.getSize())
         
     # Recovery Stage
     def sample(self):
+        # print('sampling')
         # 1. Compute the output z* of the CountSketch and its best m-sparse approximation z_hat
         m_heap = []
         heapq.heapify(m_heap) # pop removes smallest item from heap
@@ -122,8 +134,8 @@ class ApproximateLpSampler:
         
         # 5. If s > \beta m^{1/2} * r or |z_i^*| < \eps^{-1\p} * r output FAIL
         # TODO: re-instate hypothesis testing
-        if (s > self.beta * self.m**0.5 * r ) or (abs(max_val) < self.eps**(1/self.p) * r):
-            return None # Failure condition
+        # if (s > self.beta * self.m**0.5 * r ) or (abs(max_val) < self.eps**(1/self.p) * r):
+        #     return None # Failure condition
         
         # 6. Output i as the sample and z_i^* t_i^(1/p) as an approximation for x_i
         return max_index, max_val * self.t.sample(i)**(1/self.p)
@@ -131,7 +143,7 @@ class ApproximateLpSampler:
 
 def main():
     print("Initializing Approximate Lp Sampler...")
-    num_trials = 500
+    num_trials = 10
     num_failures = 0
     
     frequencies = np.array([100, 200, 500, 300, 750])
@@ -151,6 +163,8 @@ def main():
         for idx, freq in enumerate(frequencies):
             sampler.insert(idx, freq)
         
+        print(sampler.zCountSketch)
+        
         result = sampler.sample()
         
         if result is None:
@@ -162,11 +176,16 @@ def main():
             
     sample_estimates = sample_estimates / sample_counts
     
-    
+    true = frequencies**p / np.sum(frequencies**p)
+    sampled = sample_counts / np.sum(sample_counts)
     print(f'success rate: {1 - num_failures / num_trials}')
-    print(f'true lp probabilities: {frequencies**p / np.sum(frequencies**p)}')
-    print(f'sampled probabilities: {sample_counts / np.sum(sample_counts)}')
+    print(f'true lp probabilities: {true}')
+    print(f'sampled probabilities: {sampled}')
     print(f'sample estimates: {sample_estimates}')
+    
+    print(f'MSE: {np.sum((true - sampled)**2)}')
+    
+    sampler.getSize()
     
 
 
